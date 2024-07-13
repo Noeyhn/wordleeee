@@ -49,12 +49,13 @@ function appStart() {
   };
 
   const displayGameover = (check) => {
-    const div = document.createElement("div");
+    const popUp = document.querySelector(".popup");
 
-    if (check) div.innerText = "축하합니다!";
-    else div.innerText = "다시도전하세요.";
-    div.classList.add("app");
-    document.body.appendChild(div);
+    popUp.style = "display:flex";
+    popUp.classList.add("popuptext");
+    if (check) popUp.innerText = "축하합니다!";
+    else popUp.innerText = "다시도전하세요.";
+    // document.body.appendChild(div);
   };
   const gameover = (check) => {
     window.removeEventListener("keydown", handleKeydown);
