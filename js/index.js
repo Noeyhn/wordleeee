@@ -1,75 +1,38 @@
 const correctAnswer = "APPLE";
+const KeyList = [
+  "A",
+  "B",
+  "C",
+  "D",
+  "E",
+  "F",
+  "G",
+  "H",
+  "I",
+  "J",
+  "K",
+  "L",
+  "M",
+  "N",
+  "O",
+  "P",
+  "Q",
+  "R",
+  "S",
+  "T",
+  "U",
+  "V",
+  "W",
+  "X",
+  "Y",
+  "Z",
+];
 
 let attempts = 0;
 let index = 0;
 let endtimer;
 
 function appStart() {
-  const displayGameover = () => {
-    const div = document.createElement("div");
-    div.innerText = "게임이 종료되었습니다.";
-    div.style =
-      "display:flex; justify-content:center; align-items:center; position:absolute; top: 29vh; left:39vw; background-color:white; width:200px; height:100px;";
-    document.body.appendChild(div);
-  };
-  const gameover = () => {
-    window.removeEventListener("keydown", handleKeydown);
-    clearInterval(endtimer);
-    displayGameover();
-  };
-
-  const nextLine = () => {
-    if (attempts === 5) return gameover();
-    attempts += 1;
-    index = 0;
-  };
-
-  const handleEnterKey = async () => {
-    let correctData = 0;
-
-    for (let i = 0; i < 5; i++) {
-      const block = document.querySelector(
-        `.board-block[data-index='${attempts}${i}']`
-      );
-      const word = block.innerText;
-      const correctWord = correctAnswer[i];
-      if (word === correctWord) {
-        correctData += 1;
-        block.style.background = "#6AAA64";
-      } else if (correctAnswer.includes(word))
-        block.style.background = "#C9B458";
-      else block.style.background = "#787C7E";
-
-      block.style.color = "white";
-    }
-
-    if (correctData === 5) gameover();
-    else nextLine();
-  };
-
-  const handleBackspace = () => {
-    if (index != 0) index -= 1;
-    const preBlock = document.querySelector(
-      `.board-block[data-index="${attempts}${index}"]`
-    );
-    preBlock.innerText = "";
-  };
-
-  const handleKeydown = (event) => {
-    const key = event.key.toUpperCase();
-    const keyCode = event.keyCode;
-    const thisBlock = document.querySelector(
-      `.board-block[data-index="${attempts}${index}"]`
-    );
-
-    if (event.key === "Backspace") handleBackspace();
-    else if (index === 5 && event.key === "Enter") handleEnterKey();
-    else if (65 <= keyCode && keyCode <= 90 && index < 5) {
-      thisBlock.innerText = key;
-      index += 1;
-    }
-  };
-
   const StartTimer = () => {
     const orginTime = new Date();
 
@@ -85,8 +48,113 @@ function appStart() {
     endtimer = setInterval(timer, 1000);
   };
 
-  StartTimer();
+  const displayGameover = (check) => {
+    const div = document.createElement("div");
+
+    if (check) div.innerText = "축하합니다!";
+    else div.innerText = "다시도전하세요.";
+    div.classList.add("app");
+    document.body.appendChild(div);
+  };
+  const gameover = (check) => {
+    window.removeEventListener("keydown", handleKeydown);
+    clearInterval(endtimer);
+    displayGameover(check);
+  };
+
+  const nextLine = () => {
+    if (attempts === 5) return gameover(false);
+    attempts += 1;
+    index = 0;
+  };
+
+  const handleEnterKey = async () => {
+    let correctData = 0;
+    const correctRow = document.querySelector(`.box-${attempts}`);
+
+    for (let i = 0; i < 5; i++) {
+      const block = document.querySelector(
+        `.board-block[data-index='${attempts}${i}']`
+      );
+      const word = block.innerText;
+      const correctWord = correctAnswer[i];
+      const keyblock = document.querySelector(
+        `.keyboard-block[data-key='${word}']`
+      );
+
+      if (word === correctWord) {
+        correctData += 1;
+
+        block.style.background = "#6AAA64";
+        block.classList.add("inputeffect");
+        keyblock.classList.remove("include");
+        keyblock.classList.add("correct");
+      } else if (correctAnswer.includes(word)) {
+        block.style.background = "#C9B458";
+
+        if (!keyblock.classList.contains("correct"))
+          keyblock.classList.add("include");
+      } else {
+        block.style.background = "#787C7E";
+        keyblock.classList.add("notcorrect");
+      }
+
+      block.style.color = "white";
+    }
+
+    if (correctData === 5) {
+      correctRow.style =
+        "display:block; background-color: rgba(0, 255, 0, 0.1);";
+      gameover(true);
+    } else {
+      document
+        .querySelector(`.board-row-${attempts}`)
+        .classList.add("notcorrect-row");
+      correctRow.style =
+        "display:block; background-color: rgba(255, 0, 0, 0.1);";
+      nextLine();
+    }
+  };
+
+  const handleBackspace = () => {
+    if (index != 0) index -= 1;
+    const preBlock = document.querySelector(
+      `.board-block[data-index="${attempts}${index}"]`
+    );
+    preBlock.innerText = "";
+    preBlock.classList.remove("inputeffect");
+  };
+
+  const handleKeydown = (event) => {
+    const key = event.key.toUpperCase();
+
+    inputKeyData(key);
+  };
+
+  const handleClick = (event) => {
+    const key = event.target.getAttribute("data-key");
+
+    inputKeyData(key);
+  };
+
+  const inputKeyData = (key) => {
+    const thisBlock = document.querySelector(
+      `.board-block[data-index="${attempts}${index}"]`
+    );
+
+    if (endtimer === undefined) StartTimer();
+
+    if (key === "BACKSPACE") handleBackspace();
+    else if (index === 5 && key === "ENTER") handleEnterKey();
+    else if (KeyList.includes(key) && index < 5) {
+      thisBlock.innerText = key;
+      thisBlock.classList.add("inputeffect");
+      index += 1;
+    }
+  };
+
   window.addEventListener("keydown", handleKeydown);
+  window.addEventListener("click", handleClick);
 }
 
 appStart();
